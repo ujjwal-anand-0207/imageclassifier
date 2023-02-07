@@ -40,9 +40,11 @@ def process_data(data_dir):
     train_datasets=datasets.ImageFolder(train_dir,transform=transform)
     valid_datasets=datasets.ImageFolder(valid_dir,transform=transform)
     
-    testloader = torch.util.data.DataLoader(test_datasets,batch_size=32,shuffle=True)
-    validloader = torch.util.data.DataLoader(valid_datasets,batch_size=32,shuffle=True)
-    trainloader = torch.util.data.DataLoader(train_datasets,batch_size=32,suffle=True)
+    testloader = torch.utils.data.DataLoader(test_datasets,batch_size=32,shuffle=True)
+
+    validloader = torch.utils.data.DataLoader(valid_datasets,batch_size=32,shuffle=True)
+
+    trainloader = torch.utils.data.DataLoader(train_datasets,batch_size=32,suffle=True)
     
     with open('cat_to_name.json','r')as f:
         cat_to_name =json.load(f)
@@ -50,8 +52,8 @@ def process_data(data_dir):
     return loaders
 
 def get_data():
-    valid_dir = args.data_directory + 'valid'
-    test_dir =args.data_directory + 'test'
+    valid_dir = args.data_directory + '/valid'
+    test_dir =args.data_directory + '/test'
     train_dir=args.data_directory+ '/train'
     data_dir = [train_dir,test_dir,valid_dir]
     return process_data(data_dir)
@@ -143,7 +145,21 @@ def train(model,data):
         test_result = test_accuracy(model,testloader,device)
         print('final accuracy:{}'.format(test_result))
         return model
-        
+
+def save_model(model):
+    print("saving model")
+    if (args.save_dir is None):
+        save_dir = 'check.pth'
+    else:
+        save_dir = args.save_dir
+    checkpoint = {
+                'model': model.cpu(),
+                'features': model.features,
+                'classifier': model.classifier,
+                'state_dict': model.state_dict()}
+    torch.save(checkpoint, save_dir)
+    return 0
+      
 def create_model():
     validation()
     data = get_data()
